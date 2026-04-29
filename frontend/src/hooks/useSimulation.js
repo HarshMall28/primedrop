@@ -56,7 +56,7 @@ export function useSimulation() {
         queueDepth: data.queueDepth ?? 0,
         responseTime: data.responseTime ?? 9,
       };
-      metricsRef.current = updated; // keep ref in sync for waitForQueueDrain
+      metricsRef.current = updated;
       setMetrics(updated);
       if ((data.inventory ?? 0) <= 0) setSoldOut(true);
     } catch (err) {
@@ -88,20 +88,18 @@ export function useSimulation() {
           if ((data.queueDepth ?? 0) === 0) {
             stableCount++;
             if (stableCount >= 2) {
-              // queue has been 0 for 2 consecutive checks — done
               clearInterval(check);
               resolve();
             }
           } else {
-            stableCount = 0; // queue still draining — reset counter
+            stableCount = 0;
           }
         } catch {
           clearInterval(check);
-          resolve(); // non-fatal — stop waiting
+          resolve();
         }
       }, 1000);
 
-      // Safety timeout — stop after 30s no matter what
       setTimeout(() => {
         clearInterval(check);
         resolve();
@@ -152,15 +150,10 @@ export function useSimulation() {
     };
   }, [isDemoActive, fetchMetrics]);
 
-  // ── Init on mount ────────────────────────────────────────────────────────
+  // ── Init on mount — just read state, no auto-reset ───────────────────────
   useEffect(() => {
     async function init() {
-      try {
-        await fetch(`${BASE_URL}/api/sale/reset`, { method: "POST" });
-      } catch {
-        // non-fatal
-      }
-      await fetchMetrics();
+      await fetchMetrics(); // read current Redis state, don't reset
     }
     init();
   }, [fetchMetrics]);
@@ -269,7 +262,6 @@ export function useSimulation() {
 
     if (soldOut > 0 || succeeded === 0) setSoldOut(true);
 
-    // Wait for BullMQ to drain and Postgres writes to complete
     addLog(
       "Processing queue — waiting for DB writes to complete...",
       "neutral",
@@ -281,7 +273,7 @@ export function useSimulation() {
     );
 
     setLoading(false);
-    setIsDemoActive(false); // safe to stop now — queue is empty
+    setIsDemoActive(false);
   }
 
   // ── Reset ────────────────────────────────────────────────────────────────
@@ -289,13 +281,14 @@ export function useSimulation() {
     try {
       setIsDemoActive(false);
       clearInterval(intervalRef.current);
-      setSoldOut(false);
-      setMetrics(INITIAL);
       setLog([]);
       setError(null);
       await fetch(`${BASE_URL}/api/sale/reset`, { method: "POST" });
       await new Promise((r) => setTimeout(r, 500));
       await fetchMetrics();
+      // only clear sold out AFTER backend confirms reset
+      setSoldOut(false);
+      setMetrics(INITIAL);
       addLog("System reset — inventory restocked to 20", "neutral");
     } catch (err) {
       addLog(`Reset failed: ${err.message}`, "error");
