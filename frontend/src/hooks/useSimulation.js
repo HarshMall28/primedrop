@@ -4,9 +4,9 @@ const BASE_URL =
   import.meta.env.VITE_API_URL || "http://localhost:3001";
 
 const MAX_LOG = 25;
-const TOTAL_REQUESTS = 1000;
+const TOTAL_REQUESTS = 50;
 const INITIAL = {
-  inventory: 100,
+  inventory: 20,
   totalRequests: 0,
   dbWrites: 0,
   duplicatesBlocked: 0,
@@ -32,6 +32,7 @@ export function useSimulation() {
   const [isDemoActive, setIsDemoActive] = useState(false);
   const [error, setError] = useState(null);
   const intervalRef = useRef(null);
+  const metricsRef = useRef(INITIAL);
 
   function addLog(message, type = "neutral") {
     setLog((prev) =>
@@ -47,21 +48,68 @@ export function useSimulation() {
       const res = await fetch(`${BASE_URL}/api/sale/metrics`);
       if (!res.ok) return;
       const data = await res.json();
-      setMetrics({
+      const updated = {
         inventory: data.inventory ?? 0,
         totalRequests: data.totalRequests ?? 0,
         dbWrites: data.dbWrites ?? 0,
         duplicatesBlocked: data.duplicatesBlocked ?? 0,
         queueDepth: data.queueDepth ?? 0,
         responseTime: data.responseTime ?? 9,
-      });
+      };
+      metricsRef.current = updated; // keep ref in sync for waitForQueueDrain
+      setMetrics(updated);
       if ((data.inventory ?? 0) <= 0) setSoldOut(true);
     } catch (err) {
       setError(`Metrics fetch failed: ${err.message}`);
     }
   }, []);
 
-  // ── Polling — only runs when demo is active ──────────────────────────────
+  // ── Wait for BullMQ queue to drain ───────────────────────────────────────
+  const waitForQueueDrain = useCallback(() => {
+    return new Promise((resolve) => {
+      let stableCount = 0;
+
+      const check = setInterval(async () => {
+        try {
+          const res = await fetch(`${BASE_URL}/api/sale/metrics`);
+          if (!res.ok) return;
+          const data = await res.json();
+          const updated = {
+            inventory: data.inventory ?? 0,
+            totalRequests: data.totalRequests ?? 0,
+            dbWrites: data.dbWrites ?? 0,
+            duplicatesBlocked: data.duplicatesBlocked ?? 0,
+            queueDepth: data.queueDepth ?? 0,
+            responseTime: data.responseTime ?? 9,
+          };
+          metricsRef.current = updated;
+          setMetrics(updated);
+
+          if ((data.queueDepth ?? 0) === 0) {
+            stableCount++;
+            if (stableCount >= 2) {
+              // queue has been 0 for 2 consecutive checks — done
+              clearInterval(check);
+              resolve();
+            }
+          } else {
+            stableCount = 0; // queue still draining — reset counter
+          }
+        } catch {
+          clearInterval(check);
+          resolve(); // non-fatal — stop waiting
+        }
+      }, 1000);
+
+      // Safety timeout — stop after 30s no matter what
+      setTimeout(() => {
+        clearInterval(check);
+        resolve();
+      }, 30000);
+    });
+  }, []);
+
+  // ── Polling — only when demo is active ──────────────────────────────────
   useEffect(() => {
     if (!isDemoActive) {
       clearInterval(intervalRef.current);
@@ -88,7 +136,7 @@ export function useSimulation() {
       }
     }
 
-    fetchMetrics(); // immediate fetch when demo starts
+    fetchMetrics();
     startPolling();
     document.addEventListener(
       "visibilitychange",
@@ -104,7 +152,7 @@ export function useSimulation() {
     };
   }, [isDemoActive, fetchMetrics]);
 
-  // ── One-time init on mount — reset + single metrics fetch, no polling ───
+  // ── Init on mount ────────────────────────────────────────────────────────
   useEffect(() => {
     async function init() {
       try {
@@ -121,9 +169,9 @@ export function useSimulation() {
   async function handleBuy() {
     if (isLoading || isSoldOut) return;
     setLoading(true);
-    setIsDemoActive(true); // start polling
+    setIsDemoActive(true);
 
-    const UNIQUE_USERS = randInt(100, 500);
+    const UNIQUE_USERS = randInt(20, 35);
     const DUPLICATES = TOTAL_REQUESTS - UNIQUE_USERS;
     const baseRepeats = Math.floor(DUPLICATES / UNIQUE_USERS);
     const extraUsers = DUPLICATES % UNIQUE_USERS;
@@ -157,13 +205,11 @@ export function useSimulation() {
 
     const ms1 = Date.now() - t0;
     let succeeded = 0,
-      soldOut = 0,
-      w1Errors = 0;
+      soldOut = 0;
     for (const r of wave1Results) {
       const s = r.value?.status ?? 0;
       if (s === 200) succeeded++;
       else if (s === 409) soldOut++;
-      else w1Errors++;
     }
 
     addLog(
@@ -223,23 +269,34 @@ export function useSimulation() {
 
     if (soldOut > 0 || succeeded === 0) setSoldOut(true);
 
-    await fetchMetrics();
+    // Wait for BullMQ to drain and Postgres writes to complete
+    addLog(
+      "Processing queue — waiting for DB writes to complete...",
+      "neutral",
+    );
+    await waitForQueueDrain();
+    addLog(
+      `Queue drained — ${metricsRef.current.dbWrites} orders written to PostgreSQL`,
+      "success",
+    );
+
     setLoading(false);
-    setIsDemoActive(false); // stop polling — demo complete
+    setIsDemoActive(false); // safe to stop now — queue is empty
   }
 
   // ── Reset ────────────────────────────────────────────────────────────────
   async function handleReset() {
     try {
-      setIsDemoActive(false); // stop polling immediately
+      setIsDemoActive(false);
       clearInterval(intervalRef.current);
-      await fetch(`${BASE_URL}/api/sale/reset`, { method: "POST" });
+      setSoldOut(false);
       setMetrics(INITIAL);
       setLog([]);
-      setSoldOut(false);
       setError(null);
-      await fetchMetrics(); // one final fetch to show reset state
-      addLog("System reset — inventory restocked to 100", "neutral");
+      await fetch(`${BASE_URL}/api/sale/reset`, { method: "POST" });
+      await new Promise((r) => setTimeout(r, 500));
+      await fetchMetrics();
+      addLog("System reset — inventory restocked to 20", "neutral");
     } catch (err) {
       addLog(`Reset failed: ${err.message}`, "error");
     }

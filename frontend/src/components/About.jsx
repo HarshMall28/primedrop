@@ -59,14 +59,18 @@ export default function About() {
           {/* Action Buttons */}
           <div className="flex flex-wrap items-center gap-4 lg:gap-6 mt-4 lg:mt-6">
             <a
-              href="#"
+              href="https://github.com/HarshMall28/primedrop/"
+              target="_blank"
+              rel="noopener noreferrer"
               className="border-2 border-[#f59e0b] text-[#f59e0b] px-6 py-3 lg:px-8 lg:py-4 rounded-lg text-[15px] 2xl:text-[16px] font-medium hover:bg-[#f59e0b] hover:text-black transition-all duration-200"
             >
               View on GitHub →
             </a>
             <a
-              href="#"
+              href="https://www.linkedin.com/in/harsh-mall"
               className="border border-[#1e2028] text-[#e8eaf0] px-6 py-3 lg:px-8 lg:py-4 rounded-lg text-[15px] 2xl:text-[16px] hover:border-[#2a2d38] transition-all"
+              target="_blank"
+              rel="noopener noreferrer"
             >
               Connect on LinkedIn →
             </a>

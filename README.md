@@ -9,11 +9,14 @@
 
 A production-grade flash sale system built to handle extreme concurrent traffic using BullMQ job queues, Redis atomic Lua scripts, and PostgreSQL — without overselling a single unit.
 
+🚀 **Live Demo** → [primedrop.vercel.app](https://primedrop.vercel.app)
+
 ---
 
 ## ✨ Features
 
 ### Backend
+
 - **Atomic inventory decrement** via Redis Lua script — prevents oversell under any concurrency
 - **BullMQ job queue** (`orders` queue) decouples HTTP response from database write — returns 200 in ~8ms
 - **Idempotency middleware** — caches responses in Redis with 24h TTL, deduplicates retries via `Idempotency-Key` header
@@ -24,7 +27,8 @@ A production-grade flash sale system built to handle extreme concurrent traffic 
 - **Helmet + CORS + compression** — production-hardened Express middleware stack
 
 ### Frontend
-- **Live demo** — fires 1,000 concurrent requests to the real backend and shows results in real time
+
+- **Live demo** — fires 50 concurrent requests to the real backend and shows results in real time
 - **Animated hero** with sequential typewriter text (`useTypingAnimation` hook)
 - **Interactive architecture diagram** — 6-step clickable walkthrough tracing a request through the full system
 - **Live metric cards** with flash animation on value change (`MetricCard`)
@@ -65,30 +69,30 @@ When a user clicks **Buy Now**, the request flows through:
 
 **Backend** (`/backend`)
 
-| Technology | Version | Purpose |
-|---|---|---|
-| Node.js | 18+ (ESM) | Runtime |
-| Express | ^4.22 | HTTP server |
-| BullMQ | ^5.76 | Job queue |
-| ioredis | ^5.10 | Redis client (Upstash / local) |
-| pg | ^8.20 | PostgreSQL client |
-| uuid | ^14.0 | Order ID generation |
-| helmet | ^8.1 | HTTP security headers |
-| compression | ^1.8 | gzip response compression |
-| cors | ^2.8 | Cross-origin resource sharing |
-| morgan | ^1.10 | HTTP request logging |
-| express-async-errors | ^3.1 | Async error propagation |
-| nodemon | ^3.1 | Dev auto-restart |
+| Technology           | Version   | Purpose                        |
+| -------------------- | --------- | ------------------------------ |
+| Node.js              | 18+ (ESM) | Runtime                        |
+| Express              | ^4.22     | HTTP server                    |
+| BullMQ               | ^5.76     | Job queue                      |
+| ioredis              | ^5.10     | Redis client (Upstash / local) |
+| pg                   | ^8.20     | PostgreSQL client              |
+| uuid                 | ^14.0     | Order ID generation            |
+| helmet               | ^8.1      | HTTP security headers          |
+| compression          | ^1.8      | gzip response compression      |
+| cors                 | ^2.8      | Cross-origin resource sharing  |
+| morgan               | ^1.10     | HTTP request logging           |
+| express-async-errors | ^3.1      | Async error propagation        |
+| nodemon              | ^3.1      | Dev auto-restart               |
 
 **Frontend** (`/frontend`)
 
-| Technology | Version | Purpose |
-|---|---|---|
-| React | ^19.2 | UI framework |
-| Vite | ^8.0 | Build tool + dev server |
-| Tailwind CSS | ^4.2 | Styling |
-| axios | ^1.15 | HTTP client |
-| lucide-react | ^1.11 | Icons |
+| Technology   | Version | Purpose                 |
+| ------------ | ------- | ----------------------- |
+| React        | ^19.2   | UI framework            |
+| Vite         | ^8.0    | Build tool + dev server |
+| Tailwind CSS | ^4.2    | Styling                 |
+| axios        | ^1.15   | HTTP client             |
+| lucide-react | ^1.11   | Icons                   |
 
 ---
 
@@ -97,20 +101,20 @@ When a user clicks **Buy Now**, the request flows through:
 The frontend is a live visual demo of the flash sale system — not a mock.
 
 - Built with **React 19 + Tailwind CSS v4**
-- Each **BUY NOW** click fires **1,000 simultaneous real requests** to the backend via `useSimulation.js`
+- Each **BUY NOW** click fires **50 simultaneous real requests** to the backend via `useSimulation.js`
 - The UI updates in real time as responses arrive, showing exactly what the system is doing
 
 **Components:**
 
-| Component | What it does |
-|---|---|
-| `Navbar` | Fixed top nav with scroll-spy — highlights active section using `IntersectionObserver` |
-| `Hero` | Animated landing section with sequential typewriter text and tech pill badges |
-| `LiveDemo` | Core demo section — product card, BUY NOW button, live metrics grid, activity log |
-| `MetricCard` | Individual stat tile (inventory, requests, DB writes, etc.) with flash animation on value change |
-| `ActivityLog` | Scrollable, color-coded event stream — shows the last 25 events from the simulation |
-| `Architecture` | 6-step interactive diagram — click each step to trace a request through the full system |
-| `About` | Project background and motivation section |
+| Component      | What it does                                                                                     |
+| -------------- | ------------------------------------------------------------------------------------------------ |
+| `Navbar`       | Fixed top nav with scroll-spy — highlights active section using `IntersectionObserver`           |
+| `Hero`         | Animated landing section with sequential typewriter text and tech pill badges                    |
+| `LiveDemo`     | Core demo section — product card, BUY NOW button, live metrics grid, activity log                |
+| `MetricCard`   | Individual stat tile (inventory, requests, DB writes, etc.) with flash animation on value change |
+| `ActivityLog`  | Scrollable, color-coded event stream — shows the last 25 events from the simulation              |
+| `Architecture` | 6-step interactive diagram — click each step to trace a request through the full system          |
+| `About`        | Project background and motivation section                                                        |
 
 > The frontend is a demo interface — for full load testing at 100,000 requests see the Load Test Results section below.
 
@@ -119,6 +123,7 @@ The frontend is a live visual demo of the flash sale system — not a mock.
 ## 🚀 Getting Started
 
 ### Prerequisites
+
 - Node.js 18+
 - Docker (for load testing with local Redis)
 - [Upstash](https://upstash.com) Redis account (free tier works)
@@ -168,14 +173,14 @@ Frontend starts on `http://localhost:5173` and proxies API calls to port 3001.
 
 All endpoints are under `/api/sale`.
 
-| Method | Endpoint | Auth | Description |
-|---|---|---|---|
-| `POST` | `/api/sale/buy` | `Idempotency-Key` header required | Attempt to purchase. Atomically decrements Redis inventory. Returns `orderId` + `remaining` on success. Returns `409` when sold out. |
-| `GET` | `/api/sale/inventory` | None | Current inventory count and configured total. |
-| `GET` | `/api/sale/metrics` | None | Live counters: `inventory`, `totalRequests`, `dbWrites`, `duplicatesBlocked`, `queueDepth`. |
-| `GET` | `/api/sale/status/:id` | None | Order status by order ID (reads Redis `order:{id}:status` key). |
-| `POST` | `/api/sale/reset` | None | Reset inventory and all metrics to default. **Blocked in production** (`NODE_ENV=production` returns 403). |
-| `GET` | `/health` | None | Health check — returns `{ status, timestamp, uptime }`. |
+| Method | Endpoint               | Auth                              | Description                                                                                                                          |
+| ------ | ---------------------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `POST` | `/api/sale/buy`        | `Idempotency-Key` header required | Attempt to purchase. Atomically decrements Redis inventory. Returns `orderId` + `remaining` on success. Returns `409` when sold out. |
+| `GET`  | `/api/sale/inventory`  | None                              | Current inventory count and configured total.                                                                                        |
+| `GET`  | `/api/sale/metrics`    | None                              | Live counters: `inventory`, `totalRequests`, `dbWrites`, `duplicatesBlocked`, `queueDepth`.                                          |
+| `GET`  | `/api/sale/status/:id` | None                              | Order status by order ID (reads Redis `order:{id}:status` key).                                                                      |
+| `POST` | `/api/sale/reset`      | None                              | Reset inventory and all metrics to default. **Blocked in production** (`NODE_ENV=production` returns 403).                           |
+| `GET`  | `/health`              | None                              | Health check — returns `{ status, timestamp, uptime }`.                                                                              |
 
 **Example:**
 
@@ -187,7 +192,12 @@ curl -X POST http://localhost:3001/api/sale/buy \
 ```
 
 ```json
-{ "success": true, "orderId": "uuid-here", "remaining": 83, "message": "Order queued successfully" }
+{
+  "success": true,
+  "orderId": "uuid-here",
+  "remaining": 83,
+  "message": "Order queued successfully"
+}
 ```
 
 ---
@@ -198,43 +208,43 @@ curl -X POST http://localhost:3001/api/sale/buy \
 
 ## Scenario
 
-| Property | Value |
-|---|---|
-| Profile | 0 → 500 → 1,000 VUs · 210 s |
-| Peak Virtual Users | 1,004 |
-| Total Requests | 179,382 |
-| Successful Purchases | 100 |
-| Sold-Out Responses (409) | 179,158 |
-| Idempotency Replays | 0 |
-| Test Duration | 3m 53s |
+| Property                 | Value                       |
+| ------------------------ | --------------------------- |
+| Profile                  | 0 → 500 → 1,000 VUs · 210 s |
+| Peak Virtual Users       | 1,004                       |
+| Total Requests           | 179,382                     |
+| Successful Purchases     | 100                         |
+| Sold-Out Responses (409) | 179,158                     |
+| Idempotency Replays      | 0                           |
+| Test Duration            | 3m 53s                      |
 
 ## Performance Metrics
 
-| Metric | Value | Threshold | Status |
-|---|---|---|---|
-| Min Response Time | 0.0 ms | — | — |
-| Avg Response Time | 3.8 ms | — | — |
-| Median Response Time | 2.1 ms | — | — |
-| p95 Response Time | **11.9 ms** | < 2,000 ms | ✅ PASSED |
-| p99 Response Time | 0.0 ms | — | — |
-| Avg Throughput | 767.7 req/s | — | — |
-| Error Rate | **0.00 %** | < 5 % | ✅ PASSED |
+| Metric               | Value       | Threshold  | Status    |
+| -------------------- | ----------- | ---------- | --------- |
+| Min Response Time    | 0.0 ms      | —          | —         |
+| Avg Response Time    | 3.8 ms      | —          | —         |
+| Median Response Time | 2.1 ms      | —          | —         |
+| p95 Response Time    | **11.9 ms** | < 2,000 ms | ✅ PASSED |
+| p99 Response Time    | 0.0 ms      | —          | —         |
+| Avg Throughput       | 767.7 req/s | —          | —         |
+| Error Rate           | **0.00 %**  | < 5 %      | ✅ PASSED |
 
 ## Infrastructure
 
-| Component | Result |
-|---|---|
-| BullMQ Queue | ✅ Jobs processed \| Peak queue depth: 0 |
-| Redis Cache | ✅ 0 units remaining \| 0 duplicates blocked |
-| PostgreSQL | ✅ 100 rows written \| No deadlocks / timeouts |
+| Component    | Result                                         |
+| ------------ | ---------------------------------------------- |
+| BullMQ Queue | ✅ Jobs processed \| Peak queue depth: 0       |
+| Redis Cache  | ✅ 0 units remaining \| 0 duplicates blocked   |
+| PostgreSQL   | ✅ 100 rows written \| No deadlocks / timeouts |
 
 ## Thresholds Summary
 
-| Check | Actual | Target | Result |
-|---|---|---|---|
-| p95 < 2,000 ms | 11.9 ms | < 2,000 ms | ✅ **PASSED** |
-| Error rate < 5 % | 0.00 % | < 5 % | ✅ **PASSED** |
-| Total reqs > 100,000 | 179,382 | > 100,000 | ✅ **PASSED** |
+| Check                | Actual  | Target     | Result        |
+| -------------------- | ------- | ---------- | ------------- |
+| p95 < 2,000 ms       | 11.9 ms | < 2,000 ms | ✅ **PASSED** |
+| Error rate < 5 %     | 0.00 %  | < 5 %      | ✅ **PASSED** |
+| Total reqs > 100,000 | 179,382 | > 100,000  | ✅ **PASSED** |
 
 ## Verdict
 
@@ -243,11 +253,13 @@ curl -X POST http://localhost:3001/api/sale/buy \
 > ℹ️ Tested with local Redis — production uses Upstash
 
 ---
-*Generated by `loadtest/format-report.js` · source: `results/summary.json`*
+
+_Generated by `loadtest/format-report.js` · source: `results/summary.json`_
 
 ---
 
 > ⚡ Load tested for flash sale scenarios:
+>
 > - **1,000 concurrent users** at peak
 > - **~768 requests/second** sustained throughput (peak ~1,000 req/s)
 > - **179,382 total requests** processed in 3m 53s
@@ -311,7 +323,7 @@ primedrop/
 │   └── src/
 │       ├── App.jsx
 │       ├── hooks/
-│       │   └── useSimulation.js  # Fires 1,000 concurrent requests, polls /metrics
+│       │   └── useSimulation.js  # Fires 50 concurrent requests, polls /metrics
 │       └── components/
 │           ├── Navbar.jsx         # Fixed nav with IntersectionObserver scroll-spy
 │           ├── Hero.jsx           # Typewriter animation landing section

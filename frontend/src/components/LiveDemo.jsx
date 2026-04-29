@@ -54,11 +54,11 @@ export default function LiveDemo() {
           <p className="text-[#e8eaf0] text-[18px] 2xl:text-[20px] leading-relaxed mb-4">
             It is Big Billion Day. Flipkart has exactly{" "}
             <strong className="font-medium text-white">
-              100 iPhone 15 Pros
+              20 iPhone 15 Pros
             </strong>{" "}
             available.
             <strong className="font-medium text-white">
-              100,000 users
+              50 users
             </strong>{" "}
             have been waiting for the sale to start. The moment it
             begins, all of them click{" "}
@@ -72,8 +72,8 @@ export default function LiveDemo() {
             PrimeDrop shows what happens instead.
           </p>
           <p className="font-mono text-[#f59e0b] text-[12px] 2xl:text-[13px] mt-4">
-            → Each click simulates 1,000 concurrent requests hitting
-            the system simultaneously.
+            → Each click simulates 50 concurrent requests hitting the
+            system simultaneously.
           </p>
         </div>
 
@@ -131,11 +131,11 @@ export default function LiveDemo() {
               {/* LOAD TEST NOTE CARD */}
               <div className="bg-[#0d0d0d] rounded-lg p-5 2xl:p-6 border border-[#1e2028] border-l-2 border-[#f59e0b] flex flex-col gap-4">
                 <div className="font-mono text-[#f59e0b] text-[10px] 2xl:text-[11px] uppercase tracking-[0.15em] text-center w-full">
-                  WHY ONLY 1,000 REQUESTS?
+                  WHY ONLY 50 REQUESTS?
                 </div>
                 <p className="text-[#e8eaf0] text-[13px] 2xl:text-[15px] min-[1920px]:text-[16px] leading-relaxed">
-                  This demo simulates 1,000 concurrent requests per
-                  click due to free hosting constraints.
+                  This demo simulates 50 concurrent requests per click
+                  due to free hosting constraints.
                 </p>
                 <p className="text-[#d1d5db] text-[13px] 2xl:text-[15px] min-[1920px]:text-[16px] leading-relaxed">
                   Locally load tested with k6 at 100,000 concurrent
@@ -145,7 +145,9 @@ export default function LiveDemo() {
                 <p className="text-[#d1d5db] text-[13px] 2xl:text-[15px] min-[1920px]:text-[16px] leading-relaxed">
                   Full results and k6 scripts{" "}
                   <a
-                    href="#"
+                    href="https://github.com/HarshMall28/primedrop/"
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="text-[#3b82f6] hover:underline cursor-pointer"
                   >
                     on GitHub →

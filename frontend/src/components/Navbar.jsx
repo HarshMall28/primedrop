@@ -64,7 +64,7 @@ export default function Navbar() {
 
         {/* RIGHT: GitHub */}
         <a
-          href="https://github.com"
+          href="https://github.com/HarshMall28/primedrop/"
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-2.5 text-[#6b7280] hover:text-[#e8eaf0] transition-colors cursor-pointer flex-shrink-0"
