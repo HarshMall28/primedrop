@@ -85,7 +85,7 @@ export default function LiveDemo() {
             <div className="bg-[#111318] border border-[#1e2028] rounded-xl p-6 2xl:p-10 flex flex-col gap-5">
               <div className="w-full aspect-video rounded-lg bg-[#1a1d24] border border-[#1e2028] flex items-center justify-center">
                 <img
-                  src="./public/iphone15pro.png"
+                  src="/iphone15pro.png"
                   alt="iPhone 15 Pro"
                   loading="lazy"
                   className="h-full w-full object-contain p-4"
