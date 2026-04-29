@@ -33,7 +33,7 @@ export default function About() {
             <p>
               Every technique: Redis Lua Scripts for atomic inventory,
               BullMQ for async decoupling, Idempotency Keys for
-              deduplication — is lifted from how production systems
+              deduplication is lifted from how production systems
               operate at scale. I built it myself from scratch so I
               could explain every line in an interview without
               hesitation.
