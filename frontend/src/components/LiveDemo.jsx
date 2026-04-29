@@ -160,10 +160,16 @@ export default function LiveDemo() {
               </div>
 
               {/* Reset button */}
+              {/* Reset button */}
               <div className="flex justify-start">
                 <button
                   onClick={handleReset}
-                  className="text-[12px] 2xl:text-[13px] font-mono border border-[#374151] text-gray-300 hover:bg-[#1e2028] hover:border-gray-400 hover:text-white transition-colors bg-[#111318] rounded px-4 py-2.5 2xl:px-5 2xl:py-3"
+                  disabled={!isSoldOut}
+                  className={`text-[12px] 2xl:text-[13px] font-mono border rounded px-4 py-2.5 2xl:px-5 2xl:py-3 transition-colors ${
+                    isSoldOut
+                      ? "border-[#374151] text-gray-300 hover:bg-[#1e2028] hover:border-gray-400 hover:text-white bg-[#111318] cursor-pointer"
+                      : "border-[#1e2028] text-[#374151] bg-[#111318] cursor-not-allowed opacity-40"
+                  }`}
                 >
                   ↺ Reset simulation
                 </button>
