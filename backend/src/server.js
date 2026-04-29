@@ -34,12 +34,20 @@ app.use(express.json({ limit: "10kb" }));
 
 app.use("/api/sale", saleRouter);
 
-app.get("/health", (_req, res) => {
-  res.json({
-    status: "ok",
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-  });
+app.get("/health", async (_req, res) => {
+  try {
+    await pool.query("SELECT 1"); // ← keeps Supabase alive
+    res.json({
+      status: "ok",
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+    });
+  } catch (err) {
+    res.status(503).json({
+      status: "error",
+      message: err.message,
+    });
+  }
 });
 
 app.use(errorHandler);
