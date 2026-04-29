@@ -1,0 +1,62 @@
+/* Typing cursor blink */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+.cursor-blink {
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  background-color: #f59e0b;
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  animation: blink 1s step-end infinite;
+}
+
+/* Fade up for buttons and pills appearing */
+@keyframes fadeInUp {
+  from { 
+    opacity: 0; 
+    transform: translateY(10px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+.fade-in-up {
+  animation: fadeInUp 0.4s ease forwards;
+}
+
+/* Stock badge pulse when low */
+@keyframes pulse-amber {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.55; }
+}
+.pulse-amber {
+  animation: pulse-amber 1.8s ease-in-out infinite;
+}
+
+/* Chevron bounce */
+@keyframes bounce-slow {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(7px); }
+}
+.bounce-slow {
+  animation: bounce-slow 2.2s ease-in-out infinite;
+}
+
+/* Metric value flash on update */
+@keyframes flash-update {
+  0%   { opacity: 1; }
+  30%  { opacity: 0.3; }
+  100% { opacity: 1; }
+}
+.flash-update {
+  animation: flash-update 0.35s ease;
+}
+
+/* Node state transitions in architecture diagram */
+.arch-node {
+  transition: all 0.2s ease;
+}

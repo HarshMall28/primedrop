@@ -1,0 +1,8 @@
+node_modules/
+.env
+/frontend/dist/      
+/backend/dist/          
+.DS_Store
+primedrop-frontend
+ss
+.claude

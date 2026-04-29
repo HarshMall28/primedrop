@@ -1,0 +1,29 @@
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    command: redis-server --save "" --appendonly no
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  k6:
+    image: grafana/k6:latest
+    depends_on:
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./flash-sale.js:/scripts/flash-sale.js:ro
+      - ./results:/results
+    environment:
+      # Override with: BASE_URL=http://your-host:3001 ./loadtest/run.sh
+      BASE_URL: ${BASE_URL:-http://host.docker.internal:3001}
+      # Set FULL_TEST=true to run the full 100k scenario (requires local Redis)
+      FULL_TEST: ${FULL_TEST:-}
+    command: run /scripts/flash-sale.js
+    # Required on Linux hosts so host.docker.internal resolves to the gateway
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

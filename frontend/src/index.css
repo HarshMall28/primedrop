@@ -1,0 +1,67 @@
+@import "tailwindcss";
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* 1. Hide ONLY the global viewport scrollbar */
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+html::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+body {
+  background-color: #0d0d0d;
+  color: #e8eaf0;
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.6;
+}
+
+/* 2. Custom internal scrollbar for terminal log */
+.scrollbar-thin {
+  /* Explicitly tell Firefox to show this inner scrollbar */
+  scrollbar-width: thin;
+  scrollbar-color: #2a2d38 transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  display: block; /* Force WebKit to show it despite the global rule */
+  width: 3px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: #2a2d38;
+  border-radius: 2px;
+}
+
+/* Selection color */
+::selection {
+  background: #f59e0b22;
+  color: #f59e0b;
+}
+
+/* Strong tags inside architecture explanation */
+.arch-body strong {
+  color: #e8eaf0;
+  font-weight: 500;
+}
